@@ -2,11 +2,11 @@
 {
     Properties
     {
-        _Color("Color ", Color) = (1,1,1,1)
+        _Color("Tinting Color ", Color) = (1,1,1,1)
         _MainTex("Albedo Map", 2D) = "white" {}
-        _RandomizatonOfTiles(" Randomize Tiles", Range(0.0, 1.0)) = 0
         _RandomizatonOfTilesScaleMap("Randomize Noise Map", 2D) = "white" {}
-        _RandomizatonOfTilesScale(" Randomize Tiles Scale", Range(-100.0, 100.0)) = 0
+        _RandomizatonOfTiles(" Randomize Tiles", Range(0.0, 1.0)) = 0
+        // _RandomizatonOfTilesScale(" Randomize Tiles Scale", Range(-100.0, 100.0)) = 0
         [PerRendererData] _AllowedOffsett (" Offset  X Y of the UV", Vector) = (0,0,0,0)
 
         _ColorTOBeUsedFor("Color for use in Lerping", Color) = (0,0,0)
@@ -144,7 +144,7 @@
                 //     UNITY_VERTEX_OUTPUT_STEREO
             // };
 
-            float _RandomizatonOfTilesScale;
+            // float _RandomizatonOfTilesScale;
             float _RandomizatonOfTiles;
             half4 _ColorTOBeUsedFor;    
             sampler2D _RandomizatonOfTilesScaleMap;

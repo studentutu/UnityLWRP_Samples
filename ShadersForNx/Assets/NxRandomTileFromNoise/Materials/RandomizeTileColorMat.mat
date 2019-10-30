@@ -40,7 +40,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: e9d082c5a5fd7294cbaf0fa50a685dda, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -57,7 +57,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _RandomizatonOfTilesScaleMap:
         m_Texture: {fileID: 2800000, guid: 0944e4381df6c004f9c67de950059d72, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     - _RandomizatonOfTiles_MAP:
         m_Texture: {fileID: 0}
@@ -76,7 +76,7 @@ Material:
     - _OcclusionStrength: 0.015
     - _Parallax: 0.02
     - _RandomizatonOfTiles: 1
-    - _RandomizatonOfTilesScale: 0.042
+    - _RandomizatonOfTilesScale: -2
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 0
     - _SrcBlend: 1
@@ -85,5 +85,5 @@ Material:
     m_Colors:
     - _AllowedOffsett: {r: -46.3, g: -30, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _ColorTOBeUsedFor: {r: 0, g: 0, b: 0, a: 1}
+    - _ColorTOBeUsedFor: {r: 1, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 1, g: 0.995283, b: 0.995283, a: 1}

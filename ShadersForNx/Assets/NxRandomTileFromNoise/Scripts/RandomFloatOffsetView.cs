@@ -44,11 +44,12 @@ namespace ShaderRandomOffset
             }
         }
 
-
+#if UNITY_EDITOR
         private void OnValidate()
         {
             RenewVector();
         }
+#endif
 
         private void Awake()
         {
