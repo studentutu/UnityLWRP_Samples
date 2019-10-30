@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 6900837801804975703}
   - component: {fileID: 2494912641594782817}
   - component: {fileID: 8188455340659476632}
+  - component: {fileID: 206471988218905130}
   m_Layer: 0
-  m_Name: Floor_Plate_2x2m_02
+  m_Name: Tile_Plate_2x2m_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,7 +58,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 4965218603054178543, guid: c7d8ad3a56d41a444b458cb7bffdab6b, type: 3}
+  - {fileID: 2100000, guid: 624cd5b7794f11347b20e492bac1f6b6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -78,3 +79,31 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &206471988218905130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7611059953200708676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7b7f321bc3bd164b963db33a4139ebf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  materialToUse: {fileID: 2100000, guid: 624cd5b7794f11347b20e492bac1f6b6, type: 2}
+  currentOffset: {x: 0, y: 0}
+  actionToPerform:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 206471988218905130}
+        m_MethodName: RenewVector
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

@@ -5,9 +5,9 @@
         _Color("Color ", Color) = (1,1,1,1)
         _MainTex("Albedo Map", 2D) = "white" {}
         _RandomizatonOfTiles(" Randomize Tiles", Range(0.0, 1.0)) = 0
-        _RandomizatonOfTilesScale(" Randomize Tiles Scale", Range(-100.0, 100.0)) = 0
         _RandomizatonOfTilesScaleMap("Randomize Noise Map", 2D) = "white" {}
-
+        _RandomizatonOfTilesScale(" Randomize Tiles Scale", Range(-100.0, 100.0)) = 0
+        [PerRendererData] _AllowedOffsett (" Offset  X Y of the UV", Vector) = (0,0,0,0)
 
         _ColorTOBeUsedFor("Color for use in Lerping", Color) = (0,0,0)
 
@@ -52,8 +52,9 @@
     }
 
     CGINCLUDE
-    // 
+    // #define _EMISSION 1
     ENDCG
+
     SubShader
     {
         Tags 
@@ -63,6 +64,8 @@
         }
         LOD 100
 
+        // Forward Pass
+        //
         Pass
         {
             Blend [_SrcBlend] [_DstBlend]
@@ -71,8 +74,9 @@
             CGPROGRAM
             #pragma target 3.0
             #pragma vertex vertBase
-            #pragma fragment  frag
-            // fragBase
+            #pragma fragment  frag  
+            // custom frag
+            // native Unity fragBase
             #pragma fragmentoption ARB_precision_hint_fastest
 
 
@@ -95,7 +99,7 @@
 
             #pragma multi_compile_fwdbase
 
-            // #include "UnityCG.cginc"
+            #include "UnityCG.cginc"
             // #include "AutoLight.cginc"
             #include "UnityStandardCoreForward.cginc"
 
@@ -139,10 +143,17 @@
                 //     UNITY_VERTEX_OUTPUT_STEREO
             // };
 
-            float _RandomizatonOfTiles;
             float _RandomizatonOfTilesScale;
-            sampler2D _RandomizatonOfTilesScaleMap;
+            float _RandomizatonOfTiles;
             half4 _ColorTOBeUsedFor;    
+            sampler2D _RandomizatonOfTilesScaleMap;
+            float4 _RandomizatonOfTilesScaleMap_ST;
+
+            UNITY_INSTANCING_BUFFER_START(Props)
+                // put more per-instance properties here
+                UNITY_DEFINE_INSTANCED_PROP(  float4, _AllowedOffsett)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
+            UNITY_INSTANCING_BUFFER_END(Props)
+
             // half4 GetAmbientOrLightFromUV_Custom(appdata input, float3 posWorld, half3 normalWorld)
             // {
                 //     half4 ambientOrLightmapUV = 0;
@@ -262,21 +273,23 @@
 
 
                 //tex2D(_RandomizatonOfTiles_MAP, currentOne).r;
-                float2 uv_texture = i_tex.xy;
-                // when 0,y - ofsettx
-                // when x,0 - ofsetty
+                // float2 c0 = i_tex.xy + float2(0.0, 0.0);
+                // float2 c1 = i_tex.xy + float2(1.0, 0.0);
+                // float2 r0 = float2(Unity_SimpleNoise_RandomValue_float(c0)*_RandomizatonOfTilesScale,Unity_SimpleNoise_RandomValue_float(c1)* _RandomizatonOfTilesScale);
+                // r0 = float2(Unity_SimpleNnoise_Interpolate_float(i_tex.x,r0.x,_RandomizatonOfTilesScale),Unity_SimpleNnoise_Interpolate_float(i_tex.y,r0.y,_RandomizatonOfTilesScale) );
+                float4 offestInstanced = UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
+                float2 uv_texture = i_tex.xy + offestInstanced.xy;
+                
 
-                half2 currenUVTarget =  half2(posWorld.x,posWorld.z);
-                Unity_GradientNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNoise);
-                Unity_SimpleNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNois1);
-
+                float2 currenUVTarget =  float2(posWorld.x + uv_texture.x,posWorld.z + uv_texture.y);
+                // Unity_GradientNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNoise);
+                // Unity_SimpleNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNois1);
+                currenUVTarget = TRANSFORM_TEX(currenUVTarget,_RandomizatonOfTilesScaleMap);
                 StrenghOfNois2 = tex2D(_RandomizatonOfTilesScaleMap, currenUVTarget);
 
-                StrenghOfNoise = StrenghOfNoise + StrenghOfNois1 + StrenghOfNois2;
-                StrenghOfNoise = StrenghOfNoise *0.333;
+                StrenghOfNoise = StrenghOfNois2 ; // StrenghOfNoise + StrenghOfNois1 + StrenghOfNois2;
+                // StrenghOfNoise = StrenghOfNoise ; *0.333;
                 
-                // StrenhthOfColor = 
-                // Albedo(i_tex) * (colorTobeMultiplyBy*)
                 half3 albedoColor = Albedo(i_tex);
                 albedoColor = lerp(albedoColor,albedoColor * _ColorTOBeUsedFor, StrenghOfNoise *  _RandomizatonOfTiles);
                 half3 diffColor = DiffuseAndSpecularFromMetallic ( albedoColor, metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
@@ -393,10 +406,10 @@
             half4 frag (VertexOutputForwardBase i) : SV_Target
             {
                 UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy);
+                UNITY_SETUP_INSTANCE_ID(i);
 
                 FragmentCommonData s = FragmentSetup_Custom(i.tex, i.eyeVec, IN_VIEWDIR4PARALLAX(i), i.tangentToWorldAndPackedData,IN_WORLDPOS(i));
 
-                UNITY_SETUP_INSTANCE_ID(i);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
                 UnityLight mainLight = MainLight ();
@@ -415,5 +428,100 @@
 
             ENDCG
         }
+        //Pass  ------------------------------------------------------------------
+
+        //  Shadow rendering pass
+        //
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode" = "ShadowCaster" }
+
+            ZWrite On ZTest LEqual
+
+            CGPROGRAM
+            #pragma target 3.0
+
+            // -------------------------------------
+
+
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _PARALLAXMAP
+            #pragma multi_compile_shadowcaster
+            #pragma multi_compile_instancing
+            // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
+            //#pragma multi_compile _ LOD_FADE_CROSSFADE
+
+            #pragma vertex vertShadowCaster
+            #pragma fragment fragShadowCaster
+
+            #include "UnityStandardShadow.cginc"
+
+            ENDCG
+        }
+        // Pass Shadow ------------------------------------------------------------------
+
+        // //  Deferred pass
+        // // 
+        // Pass
+        // {
+        //     Name "DEFERRED"
+        //     Tags { "LightMode" = "Deferred" }
+
+        //     CGPROGRAM
+        //     #pragma target 3.0
+        //     #pragma exclude_renderers nomrt
+
+
+        //     // -------------------------------------
+
+        //     #pragma shader_feature _NORMALMAP
+        //     #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+        //     #pragma shader_feature _EMISSION
+        //     #pragma shader_feature _METALLICGLOSSMAP
+        //     #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+        //     #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
+        //     #pragma shader_feature ___ _DETAIL_MULX2
+        //     #pragma shader_feature _PARALLAXMAP
+
+        //     #pragma multi_compile_prepassfinal
+        //     #pragma multi_compile_instancing
+        //     // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
+        //     //#pragma multi_compile _ LOD_FADE_CROSSFADE
+
+        //     #pragma vertex vertDeferred
+        //     #pragma fragment fragDeferred
+
+        //     #include "UnityStandardCore.cginc"
+
+        //     ENDCG
+        // }
+        // // Pass Deferred------------------------------------------------------------------
+
+        // Extracts information for lightmapping, GI (emission, albedo, ...)
+        // This pass it not used during regular rendering.
+        Pass
+        {
+            Name "META"
+            Tags { "LightMode"="Meta" }
+
+            Cull Off
+
+            CGPROGRAM
+            #pragma vertex vert_meta
+            #pragma fragment frag_meta
+
+            #pragma shader_feature _EMISSION
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature ___ _DETAIL_MULX2
+            #pragma shader_feature EDITOR_VISUALIZATION
+
+            #include "UnityStandardMeta.cginc"
+            ENDCG
+        }
     }
+    Fallback "VertexLit"
 }
