@@ -61,17 +61,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
-    - _Cutoff: 0.391
+    - _Cutoff: 0.553
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _GlossMapScale: 0.404
-    - _Glossiness: 0.737
+    - _GlossMapScale: 0.992
+    - _Glossiness: 0.919
     - _GlossyReflections: 0
-    - _Metallic: 0
+    - _Metallic: 0.222
     - _Mode: 0
-    - _OcclusionStrength: 0
+    - _OcclusionStrength: 0.015
     - _Parallax: 0.02
-    - _RandomizatonOfTiles: 0.134
+    - _RandomizatonOfTiles: 0.265
+    - _RandomizatonOfTilesScale: -9.6
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 0
     - _SrcBlend: 1
@@ -79,5 +80,5 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _ColorTOBeUsedFor: {r: 1, g: 1, b: 1, a: 1}
+    - _ColorTOBeUsedFor: {r: 1, g: 0.23113209, b: 0.23113209, a: 1}
     - _EmissionColor: {r: 1, g: 0.995283, b: 0.995283, a: 1}

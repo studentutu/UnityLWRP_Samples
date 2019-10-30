@@ -5,7 +5,10 @@
         _Color("Color ", Color) = (1,1,1,1)
         _MainTex("Albedo Map", 2D) = "white" {}
         _RandomizatonOfTiles(" Randomize Tiles", Range(0.0, 1.0)) = 0
-        _RandomizatonOfTiles_MAP(" Randomize Tiles Map", 2D) = "white" {}
+        _RandomizatonOfTilesScale(" Randomize Tiles Scale", Range(-100.0, 100.0)) = 0
+        _RandomizatonOfTilesScaleMap("Randomize Noise Map", 2D) = "white" {}
+
+
         _ColorTOBeUsedFor("Color for use in Lerping", Color) = (0,0,0)
 
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
@@ -137,8 +140,9 @@
             // };
 
             float _RandomizatonOfTiles;
-            sampler2D _RandomizatonOfTiles_MAP;
-
+            float _RandomizatonOfTilesScale;
+            sampler2D _RandomizatonOfTilesScaleMap;
+            half4 _ColorTOBeUsedFor;    
             // half4 GetAmbientOrLightFromUV_Custom(appdata input, float3 posWorld, half3 normalWorld)
             // {
                 //     half4 ambientOrLightmapUV = 0;
@@ -167,6 +171,80 @@
                 //     return ambientOrLightmapUV;
             // }
 
+            float2 Unity_GradientNoise_Dir_float(float2 p)
+            {
+                // Permutation and hashing used in webgl-nosie goo.gl/pX7HtC
+                p = p % 289;
+                float x = (34 * p.x + 1) * p.x % 289 + p.y;
+                x = (34 * x + 1) * x % 289;
+                x = frac(x / 41) * 2 - 1;
+                return normalize(float2(x - floor(x + 0.5), abs(x) - 0.5));
+            }
+
+            void Unity_GradientNoise_float(float2 UV, float Scale, out float Out)
+            { 
+                float2 p = UV * Scale;
+                float2 ip = floor(p);
+                float2 fp = frac(p);
+                float d00 = dot(Unity_GradientNoise_Dir_float(ip), fp);
+                float d01 = dot(Unity_GradientNoise_Dir_float(ip + float2(0, 1)), fp - float2(0, 1));
+                float d10 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 0)), fp - float2(1, 0));
+                float d11 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 1)), fp - float2(1, 1));
+                fp = fp * fp * fp * (fp * (fp * 6 - 15) + 10);
+                Out = lerp(lerp(d00, d01, fp.y), lerp(d10, d11, fp.y), fp.x) + 0.5;
+            }
+
+            inline float Unity_SimpleNoise_RandomValue_float (float2 uv)
+            {
+                return frac(sin(dot(uv, float2(12.9898, 78.233)))*43758.5453);
+            }
+
+            inline float Unity_SimpleNnoise_Interpolate_float (float a, float b, float t)
+            {
+                return (1.0-t)*a + (t*b);
+            }
+
+
+            inline float Unity_SimpleNoise_ValueNoise_float (float2 uv)
+            {
+                float2 i = floor(uv);
+                float2 f = frac(uv);
+                f = f * f * (3.0 - 2.0 * f);
+
+                uv = abs(frac(uv) - 0.5);
+                float2 c0 = i + float2(0.0, 0.0);
+                float2 c1 = i + float2(1.0, 0.0);
+                float2 c2 = i + float2(0.0, 1.0);
+                float2 c3 = i + float2(1.0, 1.0);
+                float r0 = Unity_SimpleNoise_RandomValue_float(c0);
+                float r1 = Unity_SimpleNoise_RandomValue_float(c1);
+                float r2 = Unity_SimpleNoise_RandomValue_float(c2);
+                float r3 = Unity_SimpleNoise_RandomValue_float(c3);
+
+                float bottomOfGrid = Unity_SimpleNnoise_Interpolate_float(r0, r1, f.x);
+                float topOfGrid = Unity_SimpleNnoise_Interpolate_float(r2, r3, f.x);
+                float t = Unity_SimpleNnoise_Interpolate_float(bottomOfGrid, topOfGrid, f.y);
+                return t;
+            }
+            void Unity_SimpleNoise_float(float2 UV, float Scale, out float Out)
+            {
+                float t = 0.0;
+
+                float freq = pow(2.0, float(0));
+                float amp = pow(0.5, float(3-0));
+                t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
+
+                freq = pow(2.0, float(1));
+                amp = pow(0.5, float(3-1));
+                t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
+
+                freq = pow(2.0, float(2));
+                amp = pow(0.5, float(3-2));
+                t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
+
+                Out = t;
+            }
+
             // parallax transformed texcoord is used to sample occlusion
             inline FragmentCommonData MetallicSetup_Custom (float4 i_tex, float3 posWorld)
             {
@@ -177,11 +255,31 @@
                 half oneMinusReflectivity;
                 half3 specColor;
 
-                // half2 currentOne =  half2(posWorld.x,posWorld.y + posWorld.z);
-                // half StrenhthOfColor = tex2D(_RandomizatonOfTiles_MAP, currentOne).r;
+                // noise
+                float StrenghOfNoise;
+                float StrenghOfNois1;
+                float StrenghOfNois2;
+
+
+                //tex2D(_RandomizatonOfTiles_MAP, currentOne).r;
+                float2 uv_texture = i_tex.xy;
+                // when 0,y - ofsettx
+                // when x,0 - ofsetty
+
+                half2 currenUVTarget =  half2(posWorld.x,posWorld.z);
+                Unity_GradientNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNoise);
+                Unity_SimpleNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNois1);
+
+                StrenghOfNois2 = tex2D(_RandomizatonOfTilesScaleMap, currenUVTarget);
+
+                StrenghOfNoise = StrenghOfNoise + StrenghOfNois1 + StrenghOfNois2;
+                StrenghOfNoise = StrenghOfNoise *0.333;
+                
                 // StrenhthOfColor = 
-                // half3 colorTobeMultiplyBy = lerp(Albedo(i_tex), );
-                half3 diffColor = DiffuseAndSpecularFromMetallic (Albedo(i_tex) , metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
+                // Albedo(i_tex) * (colorTobeMultiplyBy*)
+                half3 albedoColor = Albedo(i_tex);
+                albedoColor = lerp(albedoColor,albedoColor * _ColorTOBeUsedFor, StrenghOfNoise *  _RandomizatonOfTiles);
+                half3 diffColor = DiffuseAndSpecularFromMetallic ( albedoColor, metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
 
                 FragmentCommonData o = (FragmentCommonData)0;
                 o.diffColor = diffColor;
@@ -193,21 +291,21 @@
 
             FragmentCommonData FragmentSetup_Custom (float4 i_tex, float3 i_eyeVecCustom, half3 i_viewDirForParallax, float4 tangentToWorld[3], float3 i_posWorld)
             {
-                    i_tex = Parallax(i_tex, i_viewDirForParallax);
+                i_tex = Parallax(i_tex, i_viewDirForParallax);
 
-                    half alpha = Alpha(i_tex.xy);
-                    #if defined(_ALPHATEST_ON)
-                        clip (alpha - _Cutoff);
-                    #endif
+                half alpha = Alpha(i_tex.xy);
+                #if defined(_ALPHATEST_ON)
+                    clip (alpha - _Cutoff);
+                #endif
 
-                    FragmentCommonData o = MetallicSetup_Custom (i_tex, i_posWorld);
-                    o.normalWorld = PerPixelWorldNormal(i_tex, tangentToWorld);
-                    o.eyeVec = NormalizePerPixelNormal(i_eyeVecCustom);
-                    o.posWorld = i_posWorld;
+                FragmentCommonData o = MetallicSetup_Custom (i_tex, i_posWorld);
+                o.normalWorld = PerPixelWorldNormal(i_tex, tangentToWorld);
+                o.eyeVec = NormalizePerPixelNormal(i_eyeVecCustom);
+                o.posWorld = i_posWorld;
 
-                    // NOTE: shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
-                    o.diffColor = PreMultiplyAlpha (o.diffColor, alpha, o.oneMinusReflectivity, /*out*/ o.alpha);
-                    return o;
+                // NOTE: shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
+                o.diffColor = PreMultiplyAlpha (o.diffColor, alpha, o.oneMinusReflectivity, /*out*/ o.alpha);
+                return o;
             }
 
 
