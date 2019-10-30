@@ -15,23 +15,23 @@ Shader "Blur/MaskedUIBlurOptGrayScale"
     Category 
     {
         
-        // We must be transparent, so other objects are drawn before this one.
-        Tags 
-        { 
-            "Queue"="Transparent" 
-            "IgnoreProjector"="True" 
-            "RenderType"="Opaque" 
-            "ForceNoShadowCasting" = "True"
-            "RenderPipeline" = "LightweightPipeline"
-        }
-        
-        ZWrite Off
-        Lighting Off
         
         SubShader 
         {
             Pass 
             {   
+                // We must be transparent, so other objects are drawn before this one.
+                Tags 
+                { 
+                    "Queue"="Transparent" 
+                    "IgnoreProjector"="True" 
+                    "RenderType"="Opaque" 
+                    "ForceNoShadowCasting" = "True"
+                    "RenderPipeline" = "LightweightPipeline"
+                }
+                
+                ZWrite Off
+                Lighting Off
                 Blend SrcAlpha OneMinusSrcAlpha
 
                 HLSLPROGRAM

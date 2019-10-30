@@ -6,8 +6,9 @@
         _MainTex("Albedo Map", 2D) = "white" {}
         _RandomizatonOfTilesScaleMap("Randomize Noise Map", 2D) = "white" {}
         _RandomizatonOfTiles(" Randomize Tiles", Range(0.0, 1.0)) = 0
-        // _RandomizatonOfTilesScale(" Randomize Tiles Scale", Range(-100.0, 100.0)) = 0
         [PerRendererData] _AllowedOffsett (" Offset  X Y of the UV", Vector) = (0,0,0,0)
+        [PerRendererData] _ColorTint (" _ColorTint", Color) = (1,1,1,1)
+
 
         _ColorTOBeUsedFor("Color for use in Lerping", Color) = (0,0,0)
 
@@ -153,6 +154,7 @@
             UNITY_INSTANCING_BUFFER_START(Props)
                 // put more per-instance properties here
                 UNITY_DEFINE_INSTANCED_PROP(  float4, _AllowedOffsett)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
+                UNITY_DEFINE_INSTANCED_PROP(  float4, _ColorTint)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint);
             UNITY_INSTANCING_BUFFER_END(Props)
 
             // half4 GetAmbientOrLightFromUV_Custom(appdata input, float3 posWorld, half3 normalWorld)
@@ -292,6 +294,7 @@
                 // StrenghOfNoise = StrenghOfNoise ; *0.333;
                 
                 half3 albedoColor = Albedo(i_tex);
+                albedoColor = albedoColor * lerp(albedoColor,UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint).xyz,_RandomizatonOfTiles );
                 albedoColor = lerp(albedoColor,albedoColor * _ColorTOBeUsedFor, StrenghOfNoise *  _RandomizatonOfTiles);
                 half3 diffColor = DiffuseAndSpecularFromMetallic ( albedoColor, metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
 
