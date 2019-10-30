@@ -57,17 +57,18 @@
 
     SubShader
     {
-        Tags 
-        { 
-            "Queue"="Geometry" 
-            "RenderType"="Opaque" 
-        }
-        LOD 100
 
         // Forward Pass
         //
         Pass
         {
+            Tags 
+            { 
+                "Queue"="Geometry" 
+                "RenderType"="Opaque" 
+                "LightMode" = "ForwardBase"
+            }
+            LOD 100
             Blend [_SrcBlend] [_DstBlend]
             ZWrite [_ZWrite]
 
