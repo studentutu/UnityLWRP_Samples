@@ -4,15 +4,15 @@
     {
         _Color("Tinting Color ", Color) = (1,1,1,1)
         _MainTex("Albedo Map", 2D) = "white" {}
+
         _RandomizatonOfTilesScaleMap("Randomize Noise Map", 2D) = "white" {}
-        _RandomizatonOfTiles(" Tiles Noise", Range(0.0, 1.0)) = 0
-        _SaturationStrenght(" Tiles saturation Noise", Range(-2, 2.0)) = 0.5
+        _ColorTOBeUsedFor(" Noise Color ", Color) = (0,0,0)
+        _RandomizatonOfTiles("Tiles Noise Strength", Range(0.0, 1.0)) = 0
+        _SaturationStrenght(" Tiles saturation Noise Strength", Range(-2, 2.0)) = 0.5
 
         [PerRendererData] _AllowedOffsett (" Offset  X Y of the UV", Vector) = (0,0,0,0)
         [PerRendererData] _ColorTint (" _ColorTint", Float) = 1
 
-
-        _ColorTOBeUsedFor("Color for use in Lerping", Color) = (0,0,0)
 
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
@@ -29,8 +29,8 @@
         _BumpScale("Bump Scale", Float) = 1.0
         [Normal] _BumpMap("Normal Map", 2D) = "bump" {}
 
-        [HideInInspector] _Parallax ("Height Scale", Range (0.005, 0.08)) = 0.02
-        [HideInInspector] _ParallaxMap ("Height Map", 2D) = "black" {}
+        // [HideInInspector] _Parallax ("Height Scale", Range (0.005, 0.08)) = 0.02
+        // [HideInInspector] _ParallaxMap ("Height Map", 2D) = "black" {}
 
         _OcclusionStrength("Occlusion Strength", Range(0.0, 1.0)) = 1.0
         _OcclusionMap("Occlusion Map", 2D) = "white" {}
@@ -38,11 +38,11 @@
         _EmissionColor("Emission Color", Color) = (0,0,0)
         _EmissionMap("Emission Map", 2D) = "white" {}
 
-        _DetailMask("Detail Mask", 2D) = "white" {}
+        // _DetailMask("Detail Mask", 2D) = "white" {}
 
-        _DetailAlbedoMap("Detail Albedo x2", 2D) = "grey" {}
-        _DetailNormalMapScale("Scale", Float) = 1.0
-        [Normal] _DetailNormalMap("Normal Map", 2D) = "bump" {}
+        // _DetailAlbedoMap("Detail Albedo x2", 2D) = "grey" {}
+        // _DetailNormalMapScale("Scale", Float) = 1.0
+        // [Normal] _DetailNormalMap("Normal Map", 2D) = "bump" {}
 
         [Enum(UV0,0,UV1,1)] _UVSec ("UV Set for secondary textures", Float) = 0
 
@@ -55,9 +55,9 @@
     }
 
     CGINCLUDE
-    #define _EMISSION 1
-    #define _NORMALMAP 1
-
+    // #define _EMISSION 1
+    // #define _NORMALMAP 1
+    // #define CUSTOM_METALLIC_WORKFLOW RoughnessSetup_Custom
     ENDCG
 
     SubShader
@@ -90,11 +90,22 @@
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _EMISSION
             #pragma shader_feature_local _METALLICGLOSSMAP
-            // #pragma shader_feature_local _DETAIL_MULX2
-            // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            // #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
-            // #pragma shader_feature_local _GLOSSYREFLECTIONS_OFF
-            // #pragma shader_feature_local _PARALLAXMAP
+            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature_local _GLOSSYREFLECTIONS_OFF
+
+            // #pragma shader_feature_local _DETAIL_MULX2 // not really needed
+            // #pragma shader_feature_local _PARALLAXMAP // not really needed
+
+            #pragma shader_feature_local _METALIC_SETUP_CUSTON
+            #pragma shader_feature_local _METALIC_SETUP_ROUGHNESS_CUSTON
+            #pragma shader_feature_local _METALIC_SETUP_SPECULAR_CUSTON
+
+
+
+
+            // make Light/Shadows Work
+            #pragma multi_compile_fwdbase
 
             // make fog work
             #pragma multi_compile_fog
@@ -103,7 +114,6 @@
             // GPU Instancing
             #pragma multi_compile_instancing
 
-            #pragma multi_compile_fwdbase
 
             #include "UnityCG.cginc"
             // #include "AutoLight.cginc"
@@ -316,6 +326,17 @@
                 return albedoColor;
             }
 
+            
+            #if defined(_METALIC_SETUP_CUSTON) 
+                #define CUSTOM_METALLIC_WORKFLOW MetallicSetup_Custom
+            #elif  defined(_METALIC_SETUP_ROUGHNESS_CUSTON) 
+                #define CUSTOM_METALLIC_WORKFLOW RoughnessSetup_Custom
+            #elif defined(_METALIC_SETUP_SPECULAR_CUSTON )
+                #define CUSTOM_METALLIC_WORKFLOW SpecularSetup_Custom
+            #else
+                #define CUSTOM_METALLIC_WORKFLOW RoughnessSetup_Custom
+            #endif
+
             inline FragmentCommonData SpecularSetup_Custom (float4 i_tex, float3 posWorld)
             {
                 half4 specGloss = SpecularGloss(i_tex.xy);
@@ -384,7 +405,7 @@
                     clip (alpha - _Cutoff);
                 #endif
 
-                FragmentCommonData o = MetallicSetup_Custom (i_tex, i_posWorld);
+                FragmentCommonData o = CUSTOM_METALLIC_WORKFLOW (i_tex, i_posWorld);
                 o.normalWorld = PerPixelWorldNormal(i_tex, tangentToWorld);
                 o.eyeVec = NormalizePerPixelNormal(i_eyeVecCustom);
                 o.posWorld = i_posWorld;
@@ -515,5 +536,10 @@
             ENDCG
         }
     }
+    
     Fallback "VertexLit"
+    // nameSpace also exists as a path!
+    CustomEditor "ShaderRandomOffset.NXMaterialEditorMetalicWithNoise"
+    // CustomEditor "StandardShaderGUI"
+
 }
