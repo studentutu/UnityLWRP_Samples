@@ -92,4 +92,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rendererToUse: {fileID: 8188455340659476632}
-  offsetNoise: {x: 21, y: 2}
+  offsetNoise: {x: 0, y: 0}
+  Saturation: 0
+  uniqId: Tile_Plate_2x2m_02
+  colorMin: {r: 1, g: 1, b: 1, a: 0}
+  colorMax: {r: 0, g: 0, b: 0, a: 0}
+  isTesting: 0

@@ -5,9 +5,10 @@
         _Color("Tinting Color ", Color) = (1,1,1,1)
         _MainTex("Albedo Map", 2D) = "white" {}
         _RandomizatonOfTilesScaleMap("Randomize Noise Map", 2D) = "white" {}
-        _RandomizatonOfTiles(" Randomize Tiles", Range(0.0, 1.0)) = 0
+        _RandomizatonOfTiles(" Randomize Tiles Noise", Range(0.0, 1.0)) = 0
+
         [PerRendererData] _AllowedOffsett (" Offset  X Y of the UV", Vector) = (0,0,0,0)
-        [PerRendererData] _ColorTint (" _ColorTint", Color) = (1,1,1,1)
+        [PerRendererData] _ColorTint (" _ColorTint", Float) = 1
 
 
         _ColorTOBeUsedFor("Color for use in Lerping", Color) = (0,0,0)
@@ -146,15 +147,16 @@
             // };
 
             // float _RandomizatonOfTilesScale;
-            float _RandomizatonOfTiles;
-            half4 _ColorTOBeUsedFor;    
-            sampler2D _RandomizatonOfTilesScaleMap;
-            float4 _RandomizatonOfTilesScaleMap_ST;
+            uniform fixed _RandomizatonOfTiles;
+            uniform half4 _ColorTOBeUsedFor;    
+            uniform sampler2D _RandomizatonOfTilesScaleMap;
+            uniform float4 _RandomizatonOfTilesScaleMap_ST;
 
             UNITY_INSTANCING_BUFFER_START(Props)
                 // put more per-instance properties here
                 UNITY_DEFINE_INSTANCED_PROP(  float4, _AllowedOffsett)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
-                UNITY_DEFINE_INSTANCED_PROP(  float4, _ColorTint)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint);
+                UNITY_DEFINE_INSTANCED_PROP(  float, _ColorTint)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint);
+                
             UNITY_INSTANCING_BUFFER_END(Props)
 
             // half4 GetAmbientOrLightFromUV_Custom(appdata input, float3 posWorld, half3 normalWorld)
@@ -184,6 +186,33 @@
 
                 //     return ambientOrLightmapUV;
             // }
+
+            // Function
+			// inline float3 applyHue(float3 aColor, float aHue)
+			// {
+			// 	float angle = radians(aHue);
+			// 	float3 k = float3(0.57735, 0.57735, 0.57735);
+			// 	float cosAngle = cos(angle);
+			// 	//Rodrigues' rotation formula
+			// 	return aColor * cosAngle + cross(k, aColor) * sin(angle) + k * dot(k, aColor) * (1 - cosAngle);
+			// }
+
+
+			inline float4 applySatEffect(float4 startColor, fixed sat)
+			{
+				// float hue = 360 * hsbc.r;
+				float saturation = sat * 2;
+				// float brightness = hsbc.b * 2 - 1;
+				// float contrast = hsbc.a * 2;
+
+				float4 outputColor = startColor;
+				// outputColor.rgb = applyHue(outputColor.rgb, hue);
+				// outputColor.rgb = (outputColor.rgb - 0.5f) * contrast + 0.5f + brightness;
+				outputColor.rgb = lerp(Luminance(outputColor.rgb), outputColor.rgb, saturation);
+				
+				return outputColor;
+			}
+
 
             float2 Unity_GradientNoise_Dir_float(float2 p)
             {
@@ -275,26 +304,19 @@
                 float StrenghOfNois2;
 
 
-                //tex2D(_RandomizatonOfTiles_MAP, currentOne).r;
-                // float2 c0 = i_tex.xy + float2(0.0, 0.0);
-                // float2 c1 = i_tex.xy + float2(1.0, 0.0);
-                // float2 r0 = float2(Unity_SimpleNoise_RandomValue_float(c0)*_RandomizatonOfTilesScale,Unity_SimpleNoise_RandomValue_float(c1)* _RandomizatonOfTilesScale);
-                // r0 = float2(Unity_SimpleNnoise_Interpolate_float(i_tex.x,r0.x,_RandomizatonOfTilesScale),Unity_SimpleNnoise_Interpolate_float(i_tex.y,r0.y,_RandomizatonOfTilesScale) );
                 float4 offestInstanced = UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
                 float2 uv_texture = i_tex.xy + offestInstanced.xy;
                 
 
                 float2 currenUVTarget =  float2(posWorld.x + uv_texture.x,posWorld.z + uv_texture.y);
-                // Unity_GradientNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNoise);
-                // Unity_SimpleNoise_float(currenUVTarget, _RandomizatonOfTilesScale,StrenghOfNois1);
                 currenUVTarget = TRANSFORM_TEX(currenUVTarget,_RandomizatonOfTilesScaleMap);
                 StrenghOfNois2 = tex2D(_RandomizatonOfTilesScaleMap, currenUVTarget);
 
-                StrenghOfNoise = StrenghOfNois2 ; // StrenghOfNoise + StrenghOfNois1 + StrenghOfNois2;
-                // StrenghOfNoise = StrenghOfNoise ; *0.333;
+                StrenghOfNoise = StrenghOfNois2 ; 
                 
                 half3 albedoColor = Albedo(i_tex);
-                albedoColor = albedoColor * lerp(albedoColor,UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint).xyz,_RandomizatonOfTiles );
+
+                albedoColor = applySatEffect(float4(albedoColor.xyz,1),  UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint)) .xyz;
                 albedoColor = lerp(albedoColor,albedoColor * _ColorTOBeUsedFor, StrenghOfNoise *  _RandomizatonOfTiles);
                 half3 diffColor = DiffuseAndSpecularFromMetallic ( albedoColor, metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
 
@@ -326,87 +348,6 @@
             }
 
 
-            // v2f vert (appdata input)
-            // {
-                //     v2f output;
-
-                //     UNITY_SETUP_INSTANCE_ID(input);
-                //     UNITY_TRANSFER_INSTANCE_ID(input, output);
-                //     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-
-                //     output.position_CS = UnityObjectToClipPos(input.position_OS);
-                //     output.uv = TRANSFORM_TEX(input.uv, _MainTex);
-
-                //     float4 posWorld = mul(unity_ObjectToWorld, input.position_OS);
-                //     #if UNITY_REQUIRE_FRAG_WORLDPOS
-                //         #if UNITY_PACK_WORLDPOS_WITH_TANGENT
-                //             output.tangentToWorldAndPackedData[0].w = posWorld.x;
-                //             output.tangentToWorldAndPackedData[1].w = posWorld.y;
-                //             output.tangentToWorldAndPackedData[2].w = posWorld.z;
-                //         #else
-                //             output.posWorld = posWorld.xyz;
-                //         #endif
-                //     #endif
-
-                //     float3 normalWorld = UnityObjectToWorldNormal(input.normal);
-                //     #ifdef _TANGENT_TO_WORLD
-                //         float4 tangentWorld = float4(UnityObjectToWorldDir(input.tangent.xyz), input.tangent.w);
-
-                //         float3x3 tangentToWorld = CreateTangentToWorldPerVertex(normalWorld, tangentWorld.xyz, tangentWorld.w);
-                //         output.tangentToWorldAndPackedData[0].xyz = tangentToWorld[0];
-                //         output.tangentToWorldAndPackedData[1].xyz = tangentToWorld[1];
-                //         output.tangentToWorldAndPackedData[2].xyz = tangentToWorld[2];
-                //     #else
-                //         output.tangentToWorldAndPackedData[0].xyz = 0;
-                //         output.tangentToWorldAndPackedData[1].xyz = 0;
-                //         output.tangentToWorldAndPackedData[2].xyz = normalWorld;
-                //     #endif
-                //     output.eyeVecCustom.xyz = NormalizePerVertexNormal(posWorld.xyz - _WorldSpaceCameraPos);
-                
-                //     // Lightmap from Scratch   
-                //     // output.ambientOrLightmapUV = input.uv1.xy * unity_LightmapST.xy + unity_LightmapST.zw;
-
-                //     // From Unity
-                //     output.ambientOrLightmapUV = GetAmbientOrLightFromUV_Custom(input, posWorld, normalWorld);
-                
-                //     // Transfer realtime shadows
-                //     TRANSFER_SHADOW(output);
-
-                //     //We need this for shadow receving
-                //     UNITY_TRANSFER_LIGHTING(output, input.uv1);
-
-                //     // Transfer Fog
-                //     UNITY_TRANSFER_FOG(output,output.position_CS);
-                //     return output;
-            // }
-
-            // half4 frag (v2f input) : SV_Target
-            // {
-                //     UNITY_APPLY_DITHER_CROSSFADE(input.position_CS.xy);
-                //     // sample the texture
-                //     half4 col = tex2D(_MainTex, input.uv);
-
-                //     FragmentCommonData s = FragmentSetup_Custom(col, input.eyeVecCustom, IN_VIEWDIR4PARALLAX(input), input.tangentToWorldAndPackedData,IN_WORLDPOS( input));
-                //     UNITY_SETUP_INSTANCE_ID(input); 
-                //     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-
-
-                //     UnityLight mainLight = MainLight ();
-                //     UNITY_LIGHT_ATTENUATION(atten, input, s.posWorld);
-
-                //     half occlusion = Occlusion(input.uv.xy);
-                //     UnityGI gi = FragmentGI (s, occlusion, input.ambientOrLightmapUV, atten, mainLight);
-
-                //     half4 c = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect);
-                //     c.rgb += Emission(input.uv.xy);
-
-                //     // apply fog
-                //     UNITY_APPLY_FOG(input.fogCoord, col);
-                //     col = OutputForward (col, s.alpha); // will make a clip from aplha
-
-                //     return col;
-            // }
-
             half4 frag (VertexOutputForwardBase i) : SV_Target
             {
                 UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy);
@@ -432,7 +373,7 @@
 
             ENDCG
         }
-        //Pass  ------------------------------------------------------------------
+        //Pass Forward base ------------------------------------------------------------------
 
         //  Shadow rendering pass
         //

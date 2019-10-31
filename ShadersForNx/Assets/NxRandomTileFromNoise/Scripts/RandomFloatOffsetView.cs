@@ -13,8 +13,12 @@ namespace ShaderRandomOffset
 
         [SerializeField] private Renderer rendererToUse;
         [SerializeField] private Vector2 offsetNoise;
-        [HideInInspector] [SerializeField] private Vector3 randomColor;
-        [HideInInspector] [SerializeField] private string instanceId;
+        [HideInInspector] [SerializeField] private float Saturation;
+        [HideInInspector] [SerializeField] private string uniqId;
+
+        [SerializeField] private Color colorMin;
+        [SerializeField] private Color colorMax;
+
         private MaterialPropertyBlock propBlock;
         private bool generateNew = false;
 
@@ -47,11 +51,16 @@ namespace ShaderRandomOffset
                 return propBlock;
             }
         }
-        
+
 
 #if UNITY_EDITOR
+        public bool isTesting = false;
         private void OnValidate()
         {
+            if (isTesting)
+            {
+                Saturation = GenerateNewColorGrayScale();
+            }
             RenewVector();
         }
 #endif
@@ -60,9 +69,9 @@ namespace ShaderRandomOffset
         {
 #if UNITY_EDITOR
             // Fix when Copied with Ctrl+D or with instance of the prefab
-            if (!Application.isPlaying && instanceId != getUniqIdFromScene())
+            if (!Application.isPlaying && uniqId != getUniqIdFromScene())
             {
-                instanceId = getUniqIdFromScene();
+                uniqId = getUniqIdFromScene();
                 generateNew = true;
 
                 UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);
@@ -79,13 +88,9 @@ namespace ShaderRandomOffset
             }
 
             // Random Tint Color
-            if (randomColor.x == 0 && randomColor.y == 0 && randomColor.z == 0 || generateNew)
+            if (Saturation == 0 || generateNew)
             {
-                randomColor = new Vector3(
-                    Random.Range(0.7f, 1f),
-                    1, //Random.Range(0.5f, 1f),
-                    Random.Range(0.9f, 1f)
-                );
+                Saturation = GenerateNewColorGrayScale();
             }
 
             generateNew = false;
@@ -98,8 +103,19 @@ namespace ShaderRandomOffset
             PropBlock.SetVector(VectorToSet, new Vector4(offsetNoise.x, offsetNoise.y, 0, 0));
 
             // smallColorTint = new Color(smallColorTint.r * 0.3f, smallColorTint.g * 0.59f, smallColorTint.r * 0.11f); // col.r * 0.3f + col.g * 0.59f + col.b * 0.11f;
-            PropBlock.SetColor(ColorToSet, new Color(randomColor.x, randomColor.y, randomColor.z, 1));
+            PropBlock.SetFloat(ColorToSet, Saturation);
             RendereToUse.SetPropertyBlock(PropBlock);
+        }
+
+        private float GenerateNewColorGrayScale()
+        {
+            Color toBeused = new Color(
+                Random.Range(colorMin.r, colorMax.r),
+                Random.Range(colorMin.g, colorMax.g),
+                Random.Range(colorMin.b, colorMax.b)
+            );
+            Debug.LogWarning( $" object {this.gameObject.name} grayscale {toBeused.grayscale}",this.gameObject);
+            return toBeused.grayscale;
         }
 
         private bool CheckAndSetRenderer(Renderer any)

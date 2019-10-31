@@ -65,6 +65,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
+    - _ColorTint: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -75,7 +76,9 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 0.015
     - _Parallax: 0.02
-    - _RandomizatonOfTiles: 1
+    - _RandomizatonOfTiles: 0.838
+    - _RandomizatonOfTilesHue: 0.341
+    - _RandomizatonOfTilesSaturation: 0.689
     - _RandomizatonOfTilesScale: -2
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 0
@@ -88,3 +91,4 @@ Material:
     - _ColorTOBeUsedFor: {r: 1, g: 0, b: 0, a: 1}
     - _ColorTint: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 1, g: 0.995283, b: 0.995283, a: 1}
+    - _RandomizatonOfTilesHue: {r: 0.559, g: 1, b: 0.81624997, a: 0.47058824}
