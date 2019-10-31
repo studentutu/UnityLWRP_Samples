@@ -55,7 +55,9 @@
     }
 
     CGINCLUDE
-    // #define _EMISSION 1
+    #define _EMISSION 1
+    #define _NORMALMAP 1
+
     ENDCG
 
     SubShader
@@ -84,10 +86,10 @@
             #pragma fragmentoption ARB_precision_hint_fastest
 
 
-            // #pragma shader_feature _NORMALMAP
             // #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-            // #pragma shader_feature _EMISSION
-            // #pragma shader_feature_local _METALLICGLOSSMAP
+            #pragma shader_feature _NORMALMAP
+            #pragma shader_feature _EMISSION
+            #pragma shader_feature_local _METALLICGLOSSMAP
             // #pragma shader_feature_local _DETAIL_MULX2
             // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             // #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
@@ -155,10 +157,10 @@
             uniform float4 _RandomizatonOfTilesScaleMap_ST;
 
             UNITY_INSTANCING_BUFFER_START(Props)
-                // put more per-instance properties here
-                UNITY_DEFINE_INSTANCED_PROP(  float4, _AllowedOffsett)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
-                UNITY_DEFINE_INSTANCED_PROP(  float, _ColorTint)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint);
-                
+            // put more per-instance properties here
+            UNITY_DEFINE_INSTANCED_PROP(  float4, _AllowedOffsett)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
+            UNITY_DEFINE_INSTANCED_PROP(  float, _ColorTint)  // acces via UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint);
+            
             UNITY_INSTANCING_BUFFER_END(Props)
 
             // half4 GetAmbientOrLightFromUV_Custom(appdata input, float3 posWorld, half3 normalWorld)
@@ -190,119 +192,110 @@
             // }
 
             // Function
-			// inline float3 applyHue(float3 aColor, float aHue)
-			// {
-			// 	float angle = radians(aHue);
-			// 	float3 k = float3(0.57735, 0.57735, 0.57735);
-			// 	float cosAngle = cos(angle);
-			// 	//Rodrigues' rotation formula
-			// 	return aColor * cosAngle + cross(k, aColor) * sin(angle) + k * dot(k, aColor) * (1 - cosAngle);
-			// }
+            // inline float3 applyHue(float3 aColor, float aHue)
+            // {
+                // 	float angle = radians(aHue);
+                // 	float3 k = float3(0.57735, 0.57735, 0.57735);
+                // 	float cosAngle = cos(angle);
+                // 	//Rodrigues' rotation formula
+                // 	return aColor * cosAngle + cross(k, aColor) * sin(angle) + k * dot(k, aColor) * (1 - cosAngle);
+            // }
 
 
-			inline float4 applySatEffect(float4 startColor, fixed sat)
-			{
-				// float hue = 360 * hsbc.r;
-				float saturation = sat * 2;
-				// float brightness = hsbc.b * 2 - 1;
-				// float contrast = hsbc.a * 2;
+            inline float4 applySatEffect(float4 startColor, fixed sat)
+            {
+                // float hue = 360 * hsbc.r;
+                float saturation = sat * 2;
+                // float brightness = hsbc.b * 2 - 1;
+                // float contrast = hsbc.a * 2;
 
-				float4 outputColor = startColor;
-				// outputColor.rgb = applyHue(outputColor.rgb, hue);
-				// outputColor.rgb = (outputColor.rgb - 0.5f) * contrast + 0.5f + brightness;
-				outputColor.rgb = lerp(Luminance(outputColor.rgb), outputColor.rgb, saturation);
-				
-				return outputColor;
-			}
+                float4 outputColor = startColor;
+                // outputColor.rgb = applyHue(outputColor.rgb, hue);
+                // outputColor.rgb = (outputColor.rgb - 0.5f) * contrast + 0.5f + brightness;
+                outputColor.rgb = lerp(Luminance(outputColor.rgb), outputColor.rgb, saturation);
+                
+                return outputColor;
+            }
 
 
             // float2 Unity_GradientNoise_Dir_float(float2 p)
             // {
-            //     // Permutation and hashing used in webgl-nosie goo.gl/pX7HtC
-            //     p = p % 289;
-            //     float x = (34 * p.x + 1) * p.x % 289 + p.y;
-            //     x = (34 * x + 1) * x % 289;
-            //     x = frac(x / 41) * 2 - 1;
-            //     return normalize(float2(x - floor(x + 0.5), abs(x) - 0.5));
+                //     // Permutation and hashing used in webgl-nosie goo.gl/pX7HtC
+                //     p = p % 289;
+                //     float x = (34 * p.x + 1) * p.x % 289 + p.y;
+                //     x = (34 * x + 1) * x % 289;
+                //     x = frac(x / 41) * 2 - 1;
+                //     return normalize(float2(x - floor(x + 0.5), abs(x) - 0.5));
             // }
 
             // void Unity_GradientNoise_float(float2 UV, float Scale, out float Out)
             // { 
-            //     float2 p = UV * Scale;
-            //     float2 ip = floor(p);
-            //     float2 fp = frac(p);
-            //     float d00 = dot(Unity_GradientNoise_Dir_float(ip), fp);
-            //     float d01 = dot(Unity_GradientNoise_Dir_float(ip + float2(0, 1)), fp - float2(0, 1));
-            //     float d10 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 0)), fp - float2(1, 0));
-            //     float d11 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 1)), fp - float2(1, 1));
-            //     fp = fp * fp * fp * (fp * (fp * 6 - 15) + 10);
-            //     Out = lerp(lerp(d00, d01, fp.y), lerp(d10, d11, fp.y), fp.x) + 0.5;
+                //     float2 p = UV * Scale;
+                //     float2 ip = floor(p);
+                //     float2 fp = frac(p);
+                //     float d00 = dot(Unity_GradientNoise_Dir_float(ip), fp);
+                //     float d01 = dot(Unity_GradientNoise_Dir_float(ip + float2(0, 1)), fp - float2(0, 1));
+                //     float d10 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 0)), fp - float2(1, 0));
+                //     float d11 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 1)), fp - float2(1, 1));
+                //     fp = fp * fp * fp * (fp * (fp * 6 - 15) + 10);
+                //     Out = lerp(lerp(d00, d01, fp.y), lerp(d10, d11, fp.y), fp.x) + 0.5;
             // }
 
             // inline float Unity_SimpleNoise_RandomValue_float (float2 uv)
             // {
-            //     return frac(sin(dot(uv, float2(12.9898, 78.233)))*43758.5453);
+                //     return frac(sin(dot(uv, float2(12.9898, 78.233)))*43758.5453);
             // }
 
             // inline float Unity_SimpleNnoise_Interpolate_float (float a, float b, float t)
             // {
-            //     return (1.0-t)*a + (t*b);
+                //     return (1.0-t)*a + (t*b);
             // }
 
 
             // inline float Unity_SimpleNoise_ValueNoise_float (float2 uv)
             // {
-            //     float2 i = floor(uv);
-            //     float2 f = frac(uv);
-            //     f = f * f * (3.0 - 2.0 * f);
+                //     float2 i = floor(uv);
+                //     float2 f = frac(uv);
+                //     f = f * f * (3.0 - 2.0 * f);
 
-            //     uv = abs(frac(uv) - 0.5);
-            //     float2 c0 = i + float2(0.0, 0.0);
-            //     float2 c1 = i + float2(1.0, 0.0);
-            //     float2 c2 = i + float2(0.0, 1.0);
-            //     float2 c3 = i + float2(1.0, 1.0);
-            //     float r0 = Unity_SimpleNoise_RandomValue_float(c0);
-            //     float r1 = Unity_SimpleNoise_RandomValue_float(c1);
-            //     float r2 = Unity_SimpleNoise_RandomValue_float(c2);
-            //     float r3 = Unity_SimpleNoise_RandomValue_float(c3);
+                //     uv = abs(frac(uv) - 0.5);
+                //     float2 c0 = i + float2(0.0, 0.0);
+                //     float2 c1 = i + float2(1.0, 0.0);
+                //     float2 c2 = i + float2(0.0, 1.0);
+                //     float2 c3 = i + float2(1.0, 1.0);
+                //     float r0 = Unity_SimpleNoise_RandomValue_float(c0);
+                //     float r1 = Unity_SimpleNoise_RandomValue_float(c1);
+                //     float r2 = Unity_SimpleNoise_RandomValue_float(c2);
+                //     float r3 = Unity_SimpleNoise_RandomValue_float(c3);
 
-            //     float bottomOfGrid = Unity_SimpleNnoise_Interpolate_float(r0, r1, f.x);
-            //     float topOfGrid = Unity_SimpleNnoise_Interpolate_float(r2, r3, f.x);
-            //     float t = Unity_SimpleNnoise_Interpolate_float(bottomOfGrid, topOfGrid, f.y);
-            //     return t;
+                //     float bottomOfGrid = Unity_SimpleNnoise_Interpolate_float(r0, r1, f.x);
+                //     float topOfGrid = Unity_SimpleNnoise_Interpolate_float(r2, r3, f.x);
+                //     float t = Unity_SimpleNnoise_Interpolate_float(bottomOfGrid, topOfGrid, f.y);
+                //     return t;
             // }
             // void Unity_SimpleNoise_float(float2 UV, float Scale, out float Out)
             // {
-            //     float t = 0.0;
+                //     float t = 0.0;
 
-            //     float freq = pow(2.0, float(0));
-            //     float amp = pow(0.5, float(3-0));
-            //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
+                //     float freq = pow(2.0, float(0));
+                //     float amp = pow(0.5, float(3-0));
+                //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
 
-            //     freq = pow(2.0, float(1));
-            //     amp = pow(0.5, float(3-1));
-            //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
+                //     freq = pow(2.0, float(1));
+                //     amp = pow(0.5, float(3-1));
+                //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
 
-            //     freq = pow(2.0, float(2));
-            //     amp = pow(0.5, float(3-2));
-            //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
+                //     freq = pow(2.0, float(2));
+                //     amp = pow(0.5, float(3-2));
+                //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
 
-            //     Out = t;
+                //     Out = t;
             // }
-
-            // parallax transformed texcoord is used to sample occlusion
-            inline FragmentCommonData MetallicSetup_Custom (float4 i_tex, float3 posWorld)
+            inline float3 CustomAlbedo(float4 i_tex, float3 posWorld)
             {
-                half2 metallicGloss = MetallicGloss(i_tex.xy);
-                half metallic = metallicGloss.x;
-                half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m.
-
-                half oneMinusReflectivity;
-                half3 specColor;
-
                 // noise
                 float StrenghOfNoise;
-                float StrenghOfNois1;
+                // float StrenghOfNois1;
                 float StrenghOfNois2;
 
 
@@ -320,7 +313,18 @@
 
                 albedoColor = lerp(albedoColor,applySatEffect(float4(albedoColor.xyz,1),  UNITY_ACCESS_INSTANCED_PROP(Props, _ColorTint)) .xyz, _SaturationStrenght);
                 albedoColor = lerp(albedoColor,albedoColor * _ColorTOBeUsedFor, StrenghOfNoise *  _RandomizatonOfTiles);
-                half3 diffColor = DiffuseAndSpecularFromMetallic ( albedoColor, metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
+                return albedoColor;
+            }
+
+            inline FragmentCommonData SpecularSetup_Custom (float4 i_tex, float3 posWorld)
+            {
+                half4 specGloss = SpecularGloss(i_tex.xy);
+                half3 specColor = specGloss.rgb;
+                half smoothness = specGloss.a;
+
+                half oneMinusReflectivity;
+                half3 finalAlbedo = CustomAlbedo(i_tex,posWorld);
+                half3 diffColor = EnergyConservationBetweenDiffuseAndSpecular (finalAlbedo, specColor, /*out*/ oneMinusReflectivity);
 
                 FragmentCommonData o = (FragmentCommonData)0;
                 o.diffColor = diffColor;
@@ -330,7 +334,48 @@
                 return o;
             }
 
-            FragmentCommonData FragmentSetup_Custom (float4 i_tex, float3 i_eyeVecCustom, half3 i_viewDirForParallax, float4 tangentToWorld[3], float3 i_posWorld)
+            inline FragmentCommonData RoughnessSetup_Custom(float4 i_tex, float3 posWorld)
+            {
+                half2 metallicGloss = MetallicRough(i_tex.xy);
+                half metallic = metallicGloss.x;
+                half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m.
+
+                half oneMinusReflectivity;
+                half3 specColor;
+                half3 finalAlbedo = CustomAlbedo(i_tex,posWorld);
+                half3 diffColor = DiffuseAndSpecularFromMetallic(finalAlbedo, metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
+
+                FragmentCommonData o = (FragmentCommonData)0;
+                o.diffColor = diffColor;
+                o.specColor = specColor;
+                o.oneMinusReflectivity = oneMinusReflectivity;
+                o.smoothness = smoothness;
+                return o;
+            }
+
+            // parallax transformed texcoord is used to sample occlusion
+            inline FragmentCommonData MetallicSetup_Custom (float4 i_tex, float3 posWorld)
+            {
+                half2 metallicGloss = MetallicGloss(i_tex.xy);
+                half metallic = metallicGloss.x;
+                half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m.
+
+                half oneMinusReflectivity;
+                half3 specColor;
+
+
+                half3 finalAlbedo = CustomAlbedo(i_tex,posWorld);
+                half3 diffColor = DiffuseAndSpecularFromMetallic ( finalAlbedo, metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
+
+                FragmentCommonData o = (FragmentCommonData)0;
+                o.diffColor = diffColor;
+                o.specColor = specColor;
+                o.oneMinusReflectivity = oneMinusReflectivity;
+                o.smoothness = smoothness;
+                return o;
+            }
+
+            inline FragmentCommonData FragmentSetup_Custom (float4 i_tex, float3 i_eyeVecCustom, half3 i_viewDirForParallax, float4 tangentToWorld[3], float3 i_posWorld)
             {
                 i_tex = Parallax(i_tex, i_viewDirForParallax);
 
@@ -414,36 +459,36 @@
         // // 
         // Pass
         // {
-        //     Name "DEFERRED"
-        //     Tags { "LightMode" = "Deferred" }
+            //     Name "DEFERRED"
+            //     Tags { "LightMode" = "Deferred" }
 
-        //     CGPROGRAM
-        //     #pragma target 3.0
-        //     #pragma exclude_renderers nomrt
+            //     CGPROGRAM
+            //     #pragma target 3.0
+            //     #pragma exclude_renderers nomrt
 
 
-        //     // -------------------------------------
+            //     // -------------------------------------
 
-        //     #pragma shader_feature _NORMALMAP
-        //     #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-        //     #pragma shader_feature _EMISSION
-        //     #pragma shader_feature _METALLICGLOSSMAP
-        //     #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-        //     #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
-        //     #pragma shader_feature ___ _DETAIL_MULX2
-        //     #pragma shader_feature _PARALLAXMAP
+            //     #pragma shader_feature _NORMALMAP
+            //     #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            //     #pragma shader_feature _EMISSION
+            //     #pragma shader_feature _METALLICGLOSSMAP
+            //     #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            //     #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
+            //     #pragma shader_feature ___ _DETAIL_MULX2
+            //     #pragma shader_feature _PARALLAXMAP
 
-        //     #pragma multi_compile_prepassfinal
-        //     #pragma multi_compile_instancing
-        //     // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
-        //     //#pragma multi_compile _ LOD_FADE_CROSSFADE
+            //     #pragma multi_compile_prepassfinal
+            //     #pragma multi_compile_instancing
+            //     // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
+            //     //#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-        //     #pragma vertex vertDeferred
-        //     #pragma fragment fragDeferred
+            //     #pragma vertex vertDeferred
+            //     #pragma fragment fragDeferred
 
-        //     #include "UnityStandardCore.cginc"
+            //     #include "UnityStandardCore.cginc"
 
-        //     ENDCG
+            //     ENDCG
         // }
         // // Pass Deferred------------------------------------------------------------------
 
