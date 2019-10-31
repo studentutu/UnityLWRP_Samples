@@ -645,12 +645,17 @@ PrefabInstance:
     - target: {fileID: 206471988218905130, guid: cbb22d60a7ece994cbcc9f86dc30774b,
         type: 3}
       propertyPath: Saturation
-      value: 0.10347878
+      value: 0.26105765
       objectReference: {fileID: 0}
     - target: {fileID: 206471988218905130, guid: cbb22d60a7ece994cbcc9f86dc30774b,
         type: 3}
       propertyPath: uniqId
       value: Tile_Plate_2x2m_02 (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 206471988218905130, guid: cbb22d60a7ece994cbcc9f86dc30774b,
+        type: 3}
+      propertyPath: isTesting
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cbb22d60a7ece994cbcc9f86dc30774b, type: 3}

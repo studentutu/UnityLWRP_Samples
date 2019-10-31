@@ -54,13 +54,17 @@ namespace ShaderRandomOffset
 
 
 #if UNITY_EDITOR
-        public bool isTesting = false;
+    #if CUSTOM_TESTS
+            public bool isTesting = false;
+    #endif
         private void OnValidate()
         {
-            if (isTesting)
-            {
-                Saturation = GenerateNewColorGrayScale();
-            }
+    #if CUSTOM_TESTS
+                if (isTesting)
+                {
+                    Saturation = GenerateNewColorGrayScale();
+                }
+    #endif
             RenewVector();
         }
 #endif
@@ -114,7 +118,6 @@ namespace ShaderRandomOffset
                 Random.Range(colorMin.g, colorMax.g),
                 Random.Range(colorMin.b, colorMax.b)
             );
-            Debug.LogWarning( $" object {this.gameObject.name} grayscale {toBeused.grayscale}",this.gameObject);
             return toBeused.grayscale;
         }
 

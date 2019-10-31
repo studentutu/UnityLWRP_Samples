@@ -76,7 +76,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 0.015
     - _Parallax: 0.02
-    - _RandomizatonOfTiles: 0.838
+    - _RandomizatonOfTiles: 0.801
     - _RandomizatonOfTilesHue: 0.341
     - _RandomizatonOfTilesSaturation: 0.689
     - _RandomizatonOfTilesScale: -2
