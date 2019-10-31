@@ -6,7 +6,7 @@
         _MainTex("Albedo Map", 2D) = "white" {}
         _RandomizatonOfTilesScaleMap("Randomize Noise Map", 2D) = "white" {}
         _RandomizatonOfTiles(" Tiles Noise", Range(0.0, 1.0)) = 0
-        _SaturationStrenght(" Tiles saturation Noise", Range(0.0, 1.0)) = 0.5
+        _SaturationStrenght(" Tiles saturation Noise", Range(-2, 2.0)) = 0.5
 
         [PerRendererData] _AllowedOffsett (" Offset  X Y of the UV", Vector) = (0,0,0,0)
         [PerRendererData] _ColorTint (" _ColorTint", Float) = 1

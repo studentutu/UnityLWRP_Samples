@@ -80,6 +80,7 @@ Material:
     - _RandomizatonOfTilesHue: 0.341
     - _RandomizatonOfTilesSaturation: 0.689
     - _RandomizatonOfTilesScale: -2
+    - _SaturationStrenght: 0.7
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 0
     - _SrcBlend: 1
