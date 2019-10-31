@@ -280,13 +280,6 @@ namespace ShaderRandomOffset
             this.m_MaterialEditor.ShaderProperty( this.NoiseColor, NXMaterialEditorMetalicWithNoise.Styles.NoiseColorText, labelIndent1);
 
             this.m_MaterialEditor.ShaderProperty( this.TilesSaturationStrenght, NXMaterialEditorMetalicWithNoise.Styles.NoiseColorSaturatioNRandomText, labelIndent1);
-
-
-            // int labelIndent2 = labelIndent1 + 1;
-            // if (this.smoothnessMapChannel == null)
-            //     return;
-            // this.m_MaterialEditor.ShaderProperty(this.smoothnessMapChannel, NXMaterialEditorMetalicWithNoise.Styles.smoothnessMapChannelText, labelIndent2);
-
         }
 
         public static void SetupMaterialWithBlendMode(
