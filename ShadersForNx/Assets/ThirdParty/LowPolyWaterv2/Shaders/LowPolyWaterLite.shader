@@ -50,7 +50,8 @@
 			Name "FORWARD"
 			Tags { "LightMode" = "ForwardBase" }
 
-			Blend SrcAlpha OneMinusSrcAlpha
+			//	  New Pixel Color 	OnScreenPixelColor
+			Blend SrcAlpha 			OneMinusSrcAlpha
 
 			CGPROGRAM
 			#pragma target 3.0 
