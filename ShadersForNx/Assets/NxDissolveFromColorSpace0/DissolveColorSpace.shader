@@ -39,7 +39,7 @@
         void surf (Input IN, inout SurfaceOutput o) 
         {
             clip(tex2D (_SliceGuide, IN.uv_SliceGuide).r - _SliceAmount);
-            o.Albedo = tex2D (_SliceGuide, IN.uv_SliceGuide);// float4(0,0,0,0);
+            o.Albedo = float4(0,0,0,0);
         }
         ENDCG
     } 
