@@ -1,9 +1,9 @@
-﻿Shader "Unlit/DissolveColorSpace"
+﻿Shader "Unlit/DepthWithShadowsOnly"
 {
     Properties
     {
         _SliceGuide ("Slice Guide (RGB)", 2D) = "white" {}
-        _SliceAmount ("Slice Amount", Range(0.0, 1.0)) = 0.5
+        _Opaqueness ("Slice Amount", Range(0.0, 1.0)) = 0.5
         [IntRange] _StencilRef ("Stencil Reference Value", Range(0,255)) = 0
     }
 
@@ -52,7 +52,7 @@
 
             sampler2D _SliceGuide;
             float4 _SliceGuide_ST;
-            float _SliceAmount;
+            float _Opaqueness;
 
             v2f vert (appdata v)
             {
@@ -67,7 +67,7 @@
                 // sample the texture
                 fixed4 col = float4(0,0,0,0);
 
-                clip(tex2D (_SliceGuide, i.uv_SliceGuide).r - _SliceAmount);
+                clip(tex2D (_SliceGuide, i.uv_SliceGuide).r - _Opaqueness);
                 return col;
             }
 
