@@ -1,0 +1,4 @@
+[submodule "ShadersForNx/Assets/Submodules/Logger"]
+	path = ShadersForNx/Assets/Submodules/Logger
+	url = https://rfedorov@gitlab.n-ix.com/unity-packages/logger.git
+	branch = master
