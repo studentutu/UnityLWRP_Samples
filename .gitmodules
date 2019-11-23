@@ -6,3 +6,7 @@
 	path = ShadersForNx/Assets/Submodules/xcode-from-unity-editor
 	url = https://rfedorov@gitlab.n-ix.com/unity-packages/xcode-from-unity-editor.git
 	branch = master
+[submodule "ShadersForNx/Assets/Submodules/mvcmodulescriptableObjects"]
+	path = ShadersForNx/Assets/Submodules/mvcmodulescriptableObjects
+	url = https://rfedorov@gitlab.n-ix.com/unity-packages/mvc-scriptable-objects.git
+	branch = master
