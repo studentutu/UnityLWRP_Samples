@@ -26,7 +26,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7611059953200708676}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -92,8 +92,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rendererToUse: {fileID: 8188455340659476632}
-  offsetNoise: {x: 0, y: 0}
-  Saturation: 0
+  offsetNoise: {x: -98, y: -5}
+  Saturation: 0.5576197
   uniqId: Tile_Plate_2x2m_02
   colorMin: {r: 1, g: 1, b: 1, a: 0}
   colorMax: {r: 0, g: 0, b: 0, a: 0}
