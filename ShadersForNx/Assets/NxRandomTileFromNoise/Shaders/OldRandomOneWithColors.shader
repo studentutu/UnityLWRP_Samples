@@ -1,4 +1,4 @@
-﻿Shader "N-IX/RandomizeOneWithTileColors"
+﻿Shader "N-IX/oldRandomizeOneWithTileColors"
 {
     Properties
     {
@@ -82,15 +82,15 @@
             #pragma fragmentoption ARB_precision_hint_fastest
 
 
-            // #pragma shader_feature _NORMALMAP
-            // #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-            // #pragma shader_feature _EMISSION
-            // #pragma shader_feature_local _METALLICGLOSSMAP
-            // #pragma shader_feature_local _DETAIL_MULX2
-            // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            // #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
-            // #pragma shader_feature_local _GLOSSYREFLECTIONS_OFF
+            #pragma shader_feature _NORMALMAP
+            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _EMISSION
+            #pragma shader_feature_local _METALLICGLOSSMAP
+            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature_local _GLOSSYREFLECTIONS_OFF
             // #pragma shader_feature_local _PARALLAXMAP
+            // #pragma shader_feature_local _DETAIL_MULX2
 
             // make fog work
             #pragma multi_compile_fog
@@ -409,7 +409,7 @@
 
             half4 frag (VertexOutputForwardBase i) : SV_Target
             {
-                UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy);
+                UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy); // LOD
                 UNITY_SETUP_INSTANCE_ID(i);
 
                 FragmentCommonData s = FragmentSetup_Custom(i.tex, i.eyeVec, IN_VIEWDIR4PARALLAX(i), i.tangentToWorldAndPackedData,IN_WORLDPOS(i));

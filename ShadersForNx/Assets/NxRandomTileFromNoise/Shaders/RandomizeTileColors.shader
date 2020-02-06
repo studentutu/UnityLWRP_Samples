@@ -101,8 +101,7 @@
             #pragma shader_feature_local _METALIC_SETUP_ROUGHNESS_CUSTON
             #pragma shader_feature_local _METALIC_SETUP_SPECULAR_CUSTON
 
-
-
+            //#pragma multi_compile _ LOD_FADE_CROSSFADE
 
             // make Light/Shadows Work
             #pragma multi_compile_fwdbase
@@ -227,86 +226,10 @@
                 return outputColor;
             }
 
-
-            // float2 Unity_GradientNoise_Dir_float(float2 p)
-            // {
-                //     // Permutation and hashing used in webgl-nosie goo.gl/pX7HtC
-                //     p = p % 289;
-                //     float x = (34 * p.x + 1) * p.x % 289 + p.y;
-                //     x = (34 * x + 1) * x % 289;
-                //     x = frac(x / 41) * 2 - 1;
-                //     return normalize(float2(x - floor(x + 0.5), abs(x) - 0.5));
-            // }
-
-            // void Unity_GradientNoise_float(float2 UV, float Scale, out float Out)
-            // { 
-                //     float2 p = UV * Scale;
-                //     float2 ip = floor(p);
-                //     float2 fp = frac(p);
-                //     float d00 = dot(Unity_GradientNoise_Dir_float(ip), fp);
-                //     float d01 = dot(Unity_GradientNoise_Dir_float(ip + float2(0, 1)), fp - float2(0, 1));
-                //     float d10 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 0)), fp - float2(1, 0));
-                //     float d11 = dot(Unity_GradientNoise_Dir_float(ip + float2(1, 1)), fp - float2(1, 1));
-                //     fp = fp * fp * fp * (fp * (fp * 6 - 15) + 10);
-                //     Out = lerp(lerp(d00, d01, fp.y), lerp(d10, d11, fp.y), fp.x) + 0.5;
-            // }
-
-            // inline float Unity_SimpleNoise_RandomValue_float (float2 uv)
-            // {
-                //     return frac(sin(dot(uv, float2(12.9898, 78.233)))*43758.5453);
-            // }
-
-            // inline float Unity_SimpleNnoise_Interpolate_float (float a, float b, float t)
-            // {
-                //     return (1.0-t)*a + (t*b);
-            // }
-
-
-            // inline float Unity_SimpleNoise_ValueNoise_float (float2 uv)
-            // {
-                //     float2 i = floor(uv);
-                //     float2 f = frac(uv);
-                //     f = f * f * (3.0 - 2.0 * f);
-
-                //     uv = abs(frac(uv) - 0.5);
-                //     float2 c0 = i + float2(0.0, 0.0);
-                //     float2 c1 = i + float2(1.0, 0.0);
-                //     float2 c2 = i + float2(0.0, 1.0);
-                //     float2 c3 = i + float2(1.0, 1.0);
-                //     float r0 = Unity_SimpleNoise_RandomValue_float(c0);
-                //     float r1 = Unity_SimpleNoise_RandomValue_float(c1);
-                //     float r2 = Unity_SimpleNoise_RandomValue_float(c2);
-                //     float r3 = Unity_SimpleNoise_RandomValue_float(c3);
-
-                //     float bottomOfGrid = Unity_SimpleNnoise_Interpolate_float(r0, r1, f.x);
-                //     float topOfGrid = Unity_SimpleNnoise_Interpolate_float(r2, r3, f.x);
-                //     float t = Unity_SimpleNnoise_Interpolate_float(bottomOfGrid, topOfGrid, f.y);
-                //     return t;
-            // }
-            // void Unity_SimpleNoise_float(float2 UV, float Scale, out float Out)
-            // {
-                //     float t = 0.0;
-
-                //     float freq = pow(2.0, float(0));
-                //     float amp = pow(0.5, float(3-0));
-                //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
-
-                //     freq = pow(2.0, float(1));
-                //     amp = pow(0.5, float(3-1));
-                //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
-
-                //     freq = pow(2.0, float(2));
-                //     amp = pow(0.5, float(3-2));
-                //     t += Unity_SimpleNoise_ValueNoise_float(float2(UV.x*Scale/freq, UV.y*Scale/freq))*amp;
-
-                //     Out = t;
-            // }
             inline float3 CustomAlbedo(float4 i_tex, float3 posWorld)
             {
                 // noise
                 float StrenghOfNoise;
-                // float StrenghOfNois1;
-                float StrenghOfNois2;
 
 
                 float4 offestInstanced = UNITY_ACCESS_INSTANCED_PROP(Props, _AllowedOffsett);
@@ -315,9 +238,8 @@
 
                 float2 currenUVTarget =  float2(posWorld.x + uv_texture.x,posWorld.z + uv_texture.y);
                 currenUVTarget = TRANSFORM_TEX(currenUVTarget,_RandomizatonOfTilesScaleMap);
-                StrenghOfNois2 = tex2D(_RandomizatonOfTilesScaleMap, currenUVTarget);
+                StrenghOfNoise = tex2D(_RandomizatonOfTilesScaleMap, currenUVTarget);
 
-                StrenghOfNoise = StrenghOfNois2 ; 
                 
                 half3 albedoColor = Albedo(i_tex);
 
@@ -464,7 +386,8 @@
             #pragma shader_feature _PARALLAXMAP
             #pragma multi_compile_shadowcaster
             #pragma multi_compile_instancing
-            // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
+            // Uncomment the following line to enable dithering LOD crossfade. 
+            // Note: there are more in the file to uncomment for other passes.
             //#pragma multi_compile _ LOD_FADE_CROSSFADE
 
             #pragma vertex vertShadowCaster
